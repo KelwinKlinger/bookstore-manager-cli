@@ -1,16 +1,19 @@
 import { Autor } from "../models/Autor";
 import { AutorRepository } from "../repositories/AutorRepository";
+import { LivroRepository } from "../repositories/LivroRepository";
 
 export class AutorService {
-  constructor(private readonly repository: AutorRepository) {}
+  constructor(
+    private readonly repository: AutorRepository,
+    private readonly livroRepository: LivroRepository,
+  ) {}
 
   public cadastrar(nome: string): Autor {
     const nomeValidado = this.validarNome(nome);
 
-    const maiorId = this.repository.listar().reduce(
-      (maior, autor) => Math.max(maior, autor.id),
-      0
-    );
+    const maiorId = this.repository
+      .listar()
+      .reduce((maior, autor) => Math.max(maior, autor.id), 0);
 
     const autor = new Autor(maiorId + 1, nomeValidado);
 
@@ -46,6 +49,13 @@ export class AutorService {
 
   public remover(id: number): void {
     this.buscarPorId(id);
+
+    if (this.livroRepository.existePorAutorId(id)) {
+      throw new Error(
+        "Não é possível remover um autor com livros cadastrados.",
+      );
+    }
+
     this.repository.remover(id);
   }
 
