@@ -23,6 +23,13 @@ export class EmprestimoRepository {
     );
   }
 
+  public async contarAtivosPorLivroId(livroId: number): Promise<number> {
+    return this.emprestimos.filter(
+      (emprestimo) => emprestimo.livroId === livroId &&
+        emprestimo.dataDevolucao === null
+    ).length;
+  }
+
   public async buscarAtivoPorLivroId(
     livroId: number
   ): Promise<Emprestimo | undefined> {

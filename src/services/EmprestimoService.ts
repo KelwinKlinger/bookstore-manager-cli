@@ -17,7 +17,8 @@ export class EmprestimoService {
     this.validarId(livroId);
     this.validarId(clienteId);
 
-    if (!(await this.livroRepository.buscarPorId(livroId))) {
+    const livro = await this.livroRepository.buscarPorId(livroId);
+    if (!livro) {
       throw new Error("Livro não encontrado.");
     }
 
@@ -25,8 +26,8 @@ export class EmprestimoService {
       throw new Error("Cliente não encontrado.");
     }
 
-    if (await this.repository.buscarAtivoPorLivroId(livroId)) {
-      throw new Error("O livro já está emprestado.");
+    if (await this.repository.contarAtivosPorLivroId(livroId) >= livro.quantidadeTotal) {
+      throw new Error("Não há exemplares disponíveis deste livro.");
     }
 
     const maiorId = (await this.repository.listar()).reduce(

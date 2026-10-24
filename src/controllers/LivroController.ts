@@ -11,7 +11,8 @@ export class LivroController {
     const titulo = await this.terminal.perguntar("Título do livro: ");
     const autorId = await this.lerId("ID do autor: ");
 
-    const livro = await this.service.cadastrar(titulo, autorId);
+    const quantidade = await this.lerQuantidade();
+    const livro = await this.service.cadastrar(titulo, autorId, quantidade);
 
     console.log(`Livro cadastrado com ID ${livro.id}.`);
   }
@@ -24,13 +25,17 @@ export class LivroController {
       return;
     }
 
-    console.table(livros);
+    const registros = [];
+    for (const livro of livros) {
+      registros.push(await this.service.consultarDisponibilidade(livro.id));
+    }
+    console.table(registros);
   }
 
   public async consultar(): Promise<void> {
     const id = await this.lerId("ID do livro: ");
 
-    console.table([await this.service.buscarPorId(id)]);
+    console.table([await this.service.consultarDisponibilidade(id)]);
   }
 
   public async atualizar(): Promise<void> {
@@ -40,7 +45,8 @@ export class LivroController {
     const titulo = await this.terminal.perguntar("Novo título: ");
     const autorId = await this.lerId("ID do autor: ");
 
-    await this.service.atualizar(id, titulo, autorId);
+    const quantidade = await this.lerQuantidade();
+    await this.service.atualizar(id, titulo, autorId, quantidade);
 
     console.log("Livro atualizado.");
   }
@@ -50,6 +56,14 @@ export class LivroController {
     await this.service.remover(id);
 
     console.log("Livro removido.");
+  }
+
+  private async lerQuantidade(): Promise<number> {
+    const entrada = await this.terminal.perguntar("Quantidade total de exemplares: ");
+    if (!/^[0-9]+$/.test(entrada)) {
+      throw new Error("Digite uma quantidade inteira positiva.");
+    }
+    return Number(entrada);
   }
 
   private async lerId(mensagem: string): Promise<number> {
