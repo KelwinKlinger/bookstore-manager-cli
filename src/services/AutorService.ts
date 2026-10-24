@@ -11,10 +11,9 @@ export class AutorService {
   public async cadastrar(nome: string): Promise<Autor> {
     const nomeValidado = this.validarNome(nome);
 
-    const maiorId = (await this.repository.listar())
-      .reduce((maior, autor) => Math.max(maior, autor.id), 0);
+    const id = await this.repository.gerarId();
 
-    const autor = new Autor(maiorId + 1, nomeValidado);
+    const autor = new Autor(id, nomeValidado);
 
     await this.repository.inserir(autor);
 
@@ -63,6 +62,10 @@ export class AutorService {
 
     if (nomeTratado.length === 0) {
       throw new Error("O nome do autor é obrigatório.");
+    }
+
+    if ([...nomeTratado].length > 150) {
+      throw new Error("O nome deve ter no máximo 150 caracteres.");
     }
 
     return nomeTratado;

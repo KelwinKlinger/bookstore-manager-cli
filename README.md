@@ -23,7 +23,7 @@ O projeto também inclui a modelagem e implementação independente de um banco 
 
 ### Pré-requisitos
 
-- Node.js e npm instalados para executar a aplicação.
+- Node.js 24 ou superior e npm instalados para executar a aplicação.
 - Git instalado para clonar o repositório.
 - PostgreSQL e pgAdmin instalados para executar a etapa SQL.
 
@@ -78,6 +78,8 @@ npm.cmd start
 ## Regras de negócio
 
 - Nomes e títulos não podem ficar vazios.
+- Nomes possuem no máximo 150 caracteres, títulos 200 e e-mails 254.
+- IDs são gerados por sequência em memória e não são reutilizados após exclusões durante a mesma execução.
 - IDs devem ser números inteiros positivos e seguros.
 - O autor precisa existir para cadastrar ou atualizar um livro.
 - E-mails são normalizados, removendo espaços nas extremidades e convertendo para letras minúsculas.
