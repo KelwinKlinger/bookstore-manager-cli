@@ -1,21 +1,22 @@
 import { Livro } from "../models/Livro";
 import { AutorRepository } from "../repositories/AutorRepository";
 import { LivroRepository } from "../repositories/LivroRepository";
+import { EmprestimoRepository } from "../repositories/EmprestimoRepository";
 
 export class LivroService {
   constructor(
     private readonly repository: LivroRepository,
-    private readonly autorRepository: AutorRepository
+    private readonly autorRepository: AutorRepository,
+    private readonly emprestimoRepository: EmprestimoRepository,
   ) {}
 
   public cadastrar(titulo: string, autorId: number): Livro {
     const tituloValidado = this.validarTitulo(titulo);
     this.validarAutor(autorId);
 
-    const maiorId = this.repository.listar().reduce(
-      (maior, livro) => Math.max(maior, livro.id),
-      0
-    );
+    const maiorId = this.repository
+      .listar()
+      .reduce((maior, livro) => Math.max(maior, livro.id), 0);
 
     const livro = new Livro(maiorId + 1, tituloValidado, autorId);
     this.repository.inserir(livro);
@@ -51,6 +52,13 @@ export class LivroService {
 
   public remover(id: number): void {
     this.buscarPorId(id);
+
+    if (this.emprestimoRepository.existePorLivroId(id)) {
+      throw new Error(
+        "Não é possível remover um livro com histórico de empréstimos.",
+      );
+    }
+
     this.repository.remover(id);
   }
 
