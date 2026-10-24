@@ -1,8 +1,12 @@
 import { Cliente } from "../models/Cliente";
 import { ClienteRepository } from "../repositories/ClienteRepository";
+import { EmprestimoRepository } from "../repositories/EmprestimoRepository";
 
 export class ClienteService {
-  constructor(private readonly repository: ClienteRepository) {}
+  constructor(
+    private readonly repository: ClienteRepository,
+    private readonly emprestimoRepository: EmprestimoRepository,
+  ) {}
 
   public cadastrar(nome: string, email: string): Cliente {
     const nomeValidado = this.validarNome(nome);
@@ -10,16 +14,11 @@ export class ClienteService {
 
     this.verificarEmailDisponivel(emailValidado);
 
-    const maiorId = this.repository.listar().reduce(
-      (maior, cliente) => Math.max(maior, cliente.id),
-      0
-    );
+    const maiorId = this.repository
+      .listar()
+      .reduce((maior, cliente) => Math.max(maior, cliente.id), 0);
 
-    const cliente = new Cliente(
-      maiorId + 1,
-      nomeValidado,
-      emailValidado
-    );
+    const cliente = new Cliente(maiorId + 1, nomeValidado, emailValidado);
 
     this.repository.inserir(cliente);
 
@@ -56,9 +55,15 @@ export class ClienteService {
 
   public remover(id: number): void {
     this.buscarPorId(id);
+
+    if (this.emprestimoRepository.existePorClienteId(id)) {
+      throw new Error(
+        "Não é possível remover um cliente com histórico de empréstimos.",
+      );
+    }
+
     this.repository.remover(id);
   }
-
   private validarNome(nome: string): string {
     const nomeTratado = nome.trim();
 
@@ -79,10 +84,7 @@ export class ClienteService {
     return emailTratado;
   }
 
-  private verificarEmailDisponivel(
-    email: string,
-    clienteId?: number
-  ): void {
+  private verificarEmailDisponivel(email: string, clienteId?: number): void {
     const cliente = this.repository.buscarPorEmail(email);
 
     if (cliente && cliente.id !== clienteId) {
