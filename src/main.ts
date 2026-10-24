@@ -12,6 +12,10 @@ import { AutorService } from "./services/AutorService";
 import { LivroService } from "./services/LivroService";
 import { ClienteService } from "./services/ClienteService";
 import { Terminal } from "./utils/Terminal";
+import { EmprestimoRepository } from "./repositories/EmprestimoRepository";
+import { EmprestimoService } from "./services/EmprestimoService";
+import { EmprestimoController } from "./controllers/EmprestimoController";
+import { EmprestimoMenu } from "./menus/EmprestimoMenu";
 
 async function main(): Promise<void> {
   const terminal = new Terminal();
@@ -20,35 +24,46 @@ async function main(): Promise<void> {
     const autorRepository = new AutorRepository();
     const livroRepository = new LivroRepository();
     const clienteRepository = new ClienteRepository();
+    const emprestimoRepository = new EmprestimoRepository();
 
-    const autorService = new AutorService(
-      autorRepository,
-      livroRepository
-    );
+    const autorService = new AutorService(autorRepository, livroRepository);
 
     const livroService = new LivroService(
       livroRepository,
-      autorRepository
+      autorRepository,
+      emprestimoRepository,
     );
 
-    const clienteService = new ClienteService(clienteRepository);
+    const clienteService = new ClienteService(
+      clienteRepository,
+      emprestimoRepository,
+    );
+
+    const emprestimoService = new EmprestimoService(
+      emprestimoRepository,
+      livroRepository,
+      clienteRepository,
+    );
 
     const autorController = new AutorController(autorService, terminal);
     const livroController = new LivroController(livroService, terminal);
-    const clienteController = new ClienteController(
-      clienteService,
-      terminal
+    const clienteController = new ClienteController(clienteService, terminal);
+    const emprestimoController = new EmprestimoController(
+      emprestimoService,
+      terminal,
     );
 
     const autorMenu = new AutorMenu(autorController, terminal);
     const livroMenu = new LivroMenu(livroController, terminal);
     const clienteMenu = new ClienteMenu(clienteController, terminal);
+    const emprestimoMenu = new EmprestimoMenu(emprestimoController, terminal);
 
     const menuPrincipal = new MenuPrincipal(
       autorMenu,
       livroMenu,
       clienteMenu,
-      terminal
+      emprestimoMenu,
+      terminal,
     );
 
     await menuPrincipal.executar();
@@ -60,7 +75,7 @@ async function main(): Promise<void> {
 main().catch((erro: unknown) => {
   console.error(
     "Falha na aplicação:",
-    erro instanceof Error ? erro.message : erro
+    erro instanceof Error ? erro.message : erro,
   );
 
   process.exitCode = 1;
