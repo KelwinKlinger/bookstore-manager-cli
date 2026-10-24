@@ -16,6 +16,7 @@ import { EmprestimoRepository } from "./repositories/EmprestimoRepository";
 import { EmprestimoService } from "./services/EmprestimoService";
 import { EmprestimoController } from "./controllers/EmprestimoController";
 import { EmprestimoMenu } from "./menus/EmprestimoMenu";
+import { carregarDadosIniciais } from "./data/seed";
 
 async function main(): Promise<void> {
   const terminal = new Terminal();
@@ -25,6 +26,13 @@ async function main(): Promise<void> {
     const livroRepository = new LivroRepository();
     const clienteRepository = new ClienteRepository();
     const emprestimoRepository = new EmprestimoRepository();
+
+    carregarDadosIniciais(
+      autorRepository,
+      livroRepository,
+      clienteRepository,
+      emprestimoRepository,
+    );
 
     const autorService = new AutorService(autorRepository, livroRepository);
 
