@@ -1,12 +1,16 @@
 import { AutorController } from "./controllers/AutorController";
 import { LivroController } from "./controllers/LivroController";
+import { ClienteController } from "./controllers/ClienteController";
 import { AutorMenu } from "./menus/AutorMenu";
 import { LivroMenu } from "./menus/LivroMenu";
+import { ClienteMenu } from "./menus/ClienteMenu";
 import { MenuPrincipal } from "./menus/MenuPrincipal";
 import { AutorRepository } from "./repositories/AutorRepository";
 import { LivroRepository } from "./repositories/LivroRepository";
+import { ClienteRepository } from "./repositories/ClienteRepository";
 import { AutorService } from "./services/AutorService";
 import { LivroService } from "./services/LivroService";
+import { ClienteService } from "./services/ClienteService";
 import { Terminal } from "./utils/Terminal";
 
 async function main(): Promise<void> {
@@ -15,6 +19,7 @@ async function main(): Promise<void> {
   try {
     const autorRepository = new AutorRepository();
     const livroRepository = new LivroRepository();
+    const clienteRepository = new ClienteRepository();
 
     const autorService = new AutorService(
       autorRepository,
@@ -26,15 +31,23 @@ async function main(): Promise<void> {
       autorRepository
     );
 
+    const clienteService = new ClienteService(clienteRepository);
+
     const autorController = new AutorController(autorService, terminal);
     const livroController = new LivroController(livroService, terminal);
+    const clienteController = new ClienteController(
+      clienteService,
+      terminal
+    );
 
     const autorMenu = new AutorMenu(autorController, terminal);
     const livroMenu = new LivroMenu(livroController, terminal);
+    const clienteMenu = new ClienteMenu(clienteController, terminal);
 
     const menuPrincipal = new MenuPrincipal(
       autorMenu,
       livroMenu,
+      clienteMenu,
       terminal
     );
 
