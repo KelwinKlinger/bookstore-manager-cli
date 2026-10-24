@@ -151,7 +151,7 @@ O desenvolvimento foi organizado com as branches `main`, `develop` e branches es
 
 ## Organização do projeto
 
-Link do quadro Kanban: a adicionar.
+Link do quadro Kanban: [Quadro Kanban — BookStore Manager CLI](https://github.com/users/KelwinKlinger/projects/2)
 
 ## Vídeo de apresentação
 
