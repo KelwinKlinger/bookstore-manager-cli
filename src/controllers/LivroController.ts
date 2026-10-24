@@ -11,13 +11,13 @@ export class LivroController {
     const titulo = await this.terminal.perguntar("Título do livro: ");
     const autorId = await this.lerId("ID do autor: ");
 
-    const livro = this.service.cadastrar(titulo, autorId);
+    const livro = await this.service.cadastrar(titulo, autorId);
 
     console.log(`Livro cadastrado com ID ${livro.id}.`);
   }
 
-  public listar(): void {
-    const livros = this.service.listar();
+  public async listar(): Promise<void> {
+    const livros = await this.service.listar();
 
     if (livros.length === 0) {
       console.log("Nenhum livro cadastrado.");
@@ -30,24 +30,24 @@ export class LivroController {
   public async consultar(): Promise<void> {
     const id = await this.lerId("ID do livro: ");
 
-    console.table([this.service.buscarPorId(id)]);
+    console.table([await this.service.buscarPorId(id)]);
   }
 
   public async atualizar(): Promise<void> {
     const id = await this.lerId("ID do livro: ");
-    this.service.buscarPorId(id);
+    await this.service.buscarPorId(id);
 
     const titulo = await this.terminal.perguntar("Novo título: ");
     const autorId = await this.lerId("ID do autor: ");
 
-    this.service.atualizar(id, titulo, autorId);
+    await this.service.atualizar(id, titulo, autorId);
 
     console.log("Livro atualizado.");
   }
 
   public async remover(): Promise<void> {
     const id = await this.lerId("ID do livro: ");
-    this.service.remover(id);
+    await this.service.remover(id);
 
     console.log("Livro removido.");
   }

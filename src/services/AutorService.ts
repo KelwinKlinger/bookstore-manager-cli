@@ -8,28 +8,27 @@ export class AutorService {
     private readonly livroRepository: LivroRepository,
   ) {}
 
-  public cadastrar(nome: string): Autor {
+  public async cadastrar(nome: string): Promise<Autor> {
     const nomeValidado = this.validarNome(nome);
 
-    const maiorId = this.repository
-      .listar()
+    const maiorId = (await this.repository.listar())
       .reduce((maior, autor) => Math.max(maior, autor.id), 0);
 
     const autor = new Autor(maiorId + 1, nomeValidado);
 
-    this.repository.inserir(autor);
+    await this.repository.inserir(autor);
 
     return autor;
   }
 
-  public listar(): Autor[] {
-    return this.repository.listar();
+  public async listar(): Promise<Autor[]> {
+    return await this.repository.listar();
   }
 
-  public buscarPorId(id: number): Autor {
+  public async buscarPorId(id: number): Promise<Autor> {
     this.validarId(id);
 
-    const autor = this.repository.buscarPorId(id);
+    const autor = await this.repository.buscarPorId(id);
 
     if (!autor) {
       throw new Error("Autor não encontrado.");
@@ -38,25 +37,25 @@ export class AutorService {
     return autor;
   }
 
-  public atualizar(id: number, nome: string): Autor {
-    this.buscarPorId(id);
+  public async atualizar(id: number, nome: string): Promise<Autor> {
+    await this.buscarPorId(id);
     const nomeValidado = this.validarNome(nome);
 
-    this.repository.atualizar(id, nomeValidado);
+    await this.repository.atualizar(id, nomeValidado);
 
-    return this.buscarPorId(id);
+    return await this.buscarPorId(id);
   }
 
-  public remover(id: number): void {
-    this.buscarPorId(id);
+  public async remover(id: number): Promise<void> {
+    await this.buscarPorId(id);
 
-    if (this.livroRepository.existePorAutorId(id)) {
+    if (await this.livroRepository.existePorAutorId(id)) {
       throw new Error(
         "Não é possível remover um autor com livros cadastrados.",
       );
     }
 
-    this.repository.remover(id);
+    await this.repository.remover(id);
   }
 
   private validarNome(nome: string): string {

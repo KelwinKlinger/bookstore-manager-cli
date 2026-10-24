@@ -3,28 +3,28 @@ import { Livro } from "../models/Livro";
 export class LivroRepository {
   private livros: Livro[] = [];
 
-  public inserir(livro: Livro): void {
+  public async inserir(livro: Livro): Promise<void> {
     this.livros.push(livro);
   }
 
-  public listar(): Livro[] {
+  public async listar(): Promise<Livro[]> {
     return [...this.livros];
   }
 
-  public buscarPorId(id: number): Livro | undefined {
+  public async buscarPorId(id: number): Promise<Livro | undefined> {
     return this.livros.find((livro) => livro.id === id);
   }
 
-  public existePorAutorId(autorId: number): boolean {
+  public async existePorAutorId(autorId: number): Promise<boolean> {
     return this.livros.some((livro) => livro.autorId === autorId);
   }
 
-  public atualizar(
+  public async atualizar(
     id: number,
     titulo: string,
     autorId: number
-  ): boolean {
-    const livro = this.buscarPorId(id);
+  ): Promise<boolean> {
+    const livro = await this.buscarPorId(id);
 
     if (!livro) {
       return false;
@@ -36,7 +36,7 @@ export class LivroRepository {
     return true;
   }
 
-  public remover(id: number): boolean {
+  public async remover(id: number): Promise<boolean> {
     const indice = this.livros.findIndex((livro) => livro.id === id);
 
     if (indice === -1) {

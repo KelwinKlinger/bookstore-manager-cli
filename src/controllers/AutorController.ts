@@ -9,13 +9,13 @@ export class AutorController {
 
   public async cadastrar(): Promise<void> {
     const nome = await this.terminal.perguntar("Nome do autor: ");
-    const autor = this.service.cadastrar(nome);
+    const autor = await this.service.cadastrar(nome);
 
     console.log(`Autor cadastrado com ID ${autor.id}.`);
   }
 
-  public listar(): void {
-    const autores = this.service.listar();
+  public async listar(): Promise<void> {
+    const autores = await this.service.listar();
 
     if (autores.length === 0) {
       console.log("Nenhum autor cadastrado.");
@@ -28,22 +28,22 @@ export class AutorController {
   public async consultar(): Promise<void> {
     const id = await this.lerId();
 
-    console.table([this.service.buscarPorId(id)]);
+    console.table([await this.service.buscarPorId(id)]);
   }
 
   public async atualizar(): Promise<void> {
     const id = await this.lerId();
-    this.service.buscarPorId(id);
+    await this.service.buscarPorId(id);
 
     const nome = await this.terminal.perguntar("Novo nome: ");
-    this.service.atualizar(id, nome);
+    await this.service.atualizar(id, nome);
 
     console.log("Autor atualizado.");
   }
 
   public async remover(): Promise<void> {
     const id = await this.lerId();
-    this.service.remover(id);
+    await this.service.remover(id);
 
     console.log("Autor removido.");
   }
