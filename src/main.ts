@@ -27,7 +27,7 @@ async function main(): Promise<void> {
     const clienteRepository = new ClienteRepository();
     const emprestimoRepository = new EmprestimoRepository();
 
-    carregarDadosIniciais(
+    await carregarDadosIniciais(
       autorRepository,
       livroRepository,
       clienteRepository,

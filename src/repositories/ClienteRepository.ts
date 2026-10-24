@@ -3,24 +3,24 @@ import { Cliente } from "../models/Cliente";
 export class ClienteRepository {
   private clientes: Cliente[] = [];
 
-  public inserir(cliente: Cliente): void {
+  public async inserir(cliente: Cliente): Promise<void> {
     this.clientes.push(cliente);
   }
 
-  public listar(): Cliente[] {
+  public async listar(): Promise<Cliente[]> {
     return [...this.clientes];
   }
 
-  public buscarPorId(id: number): Cliente | undefined {
+  public async buscarPorId(id: number): Promise<Cliente | undefined> {
     return this.clientes.find((cliente) => cliente.id === id);
   }
 
-  public buscarPorEmail(email: string): Cliente | undefined {
+  public async buscarPorEmail(email: string): Promise<Cliente | undefined> {
     return this.clientes.find((cliente) => cliente.email === email);
   }
 
-  public atualizar(id: number, nome: string, email: string): boolean {
-    const cliente = this.buscarPorId(id);
+  public async atualizar(id: number, nome: string, email: string): Promise<boolean> {
+    const cliente = await this.buscarPorId(id);
 
     if (!cliente) {
       return false;
@@ -32,7 +32,7 @@ export class ClienteRepository {
     return true;
   }
 
-  public remover(id: number): boolean {
+  public async remover(id: number): Promise<boolean> {
     const indice = this.clientes.findIndex(
       (cliente) => cliente.id === id
     );

@@ -28,10 +28,10 @@ export class EmprestimoMenu {
             await this.controller.devolver();
             break;
           case "3":
-            this.controller.listar();
+            await this.controller.listar();
             break;
           case "4":
-            this.controller.listarAtivos();
+            await this.controller.listarAtivos();
             break;
           case "5":
             await this.controller.consultar();

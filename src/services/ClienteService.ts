@@ -8,31 +8,30 @@ export class ClienteService {
     private readonly emprestimoRepository: EmprestimoRepository,
   ) {}
 
-  public cadastrar(nome: string, email: string): Cliente {
+  public async cadastrar(nome: string, email: string): Promise<Cliente> {
     const nomeValidado = this.validarNome(nome);
     const emailValidado = this.validarEmail(email);
 
-    this.verificarEmailDisponivel(emailValidado);
+    await this.verificarEmailDisponivel(emailValidado);
 
-    const maiorId = this.repository
-      .listar()
+    const maiorId = (await this.repository.listar())
       .reduce((maior, cliente) => Math.max(maior, cliente.id), 0);
 
     const cliente = new Cliente(maiorId + 1, nomeValidado, emailValidado);
 
-    this.repository.inserir(cliente);
+    await this.repository.inserir(cliente);
 
     return cliente;
   }
 
-  public listar(): Cliente[] {
-    return this.repository.listar();
+  public async listar(): Promise<Cliente[]> {
+    return await this.repository.listar();
   }
 
-  public buscarPorId(id: number): Cliente {
+  public async buscarPorId(id: number): Promise<Cliente> {
     this.validarId(id);
 
-    const cliente = this.repository.buscarPorId(id);
+    const cliente = await this.repository.buscarPorId(id);
 
     if (!cliente) {
       throw new Error("Cliente não encontrado.");
@@ -41,28 +40,28 @@ export class ClienteService {
     return cliente;
   }
 
-  public atualizar(id: number, nome: string, email: string): Cliente {
-    this.buscarPorId(id);
+  public async atualizar(id: number, nome: string, email: string): Promise<Cliente> {
+    await this.buscarPorId(id);
 
     const nomeValidado = this.validarNome(nome);
     const emailValidado = this.validarEmail(email);
 
-    this.verificarEmailDisponivel(emailValidado, id);
-    this.repository.atualizar(id, nomeValidado, emailValidado);
+    await this.verificarEmailDisponivel(emailValidado, id);
+    await this.repository.atualizar(id, nomeValidado, emailValidado);
 
-    return this.buscarPorId(id);
+    return await this.buscarPorId(id);
   }
 
-  public remover(id: number): void {
-    this.buscarPorId(id);
+  public async remover(id: number): Promise<void> {
+    await this.buscarPorId(id);
 
-    if (this.emprestimoRepository.existePorClienteId(id)) {
+    if (await this.emprestimoRepository.existePorClienteId(id)) {
       throw new Error(
         "Não é possível remover um cliente com histórico de empréstimos.",
       );
     }
 
-    this.repository.remover(id);
+    await this.repository.remover(id);
   }
   private validarNome(nome: string): string {
     const nomeTratado = nome.trim();
@@ -84,8 +83,8 @@ export class ClienteService {
     return emailTratado;
   }
 
-  private verificarEmailDisponivel(email: string, clienteId?: number): void {
-    const cliente = this.repository.buscarPorEmail(email);
+  private async verificarEmailDisponivel(email: string, clienteId?: number): Promise<void> {
+    const cliente = await this.repository.buscarPorEmail(email);
 
     if (cliente && cliente.id !== clienteId) {
       throw new Error("Este e-mail já está cadastrado.");

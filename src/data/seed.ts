@@ -7,29 +7,29 @@ import { LivroRepository } from "../repositories/LivroRepository";
 import { ClienteRepository } from "../repositories/ClienteRepository";
 import { EmprestimoRepository } from "../repositories/EmprestimoRepository";
 
-export function carregarDadosIniciais(
+export async function carregarDadosIniciais(
   autorRepository: AutorRepository,
   livroRepository: LivroRepository,
   clienteRepository: ClienteRepository,
   emprestimoRepository: EmprestimoRepository
-): void {
-  autorRepository.inserir(new Autor(1, "Machado de Assis"));
-  autorRepository.inserir(new Autor(2, "Clarice Lispector"));
+): Promise<void> {
+  await autorRepository.inserir(new Autor(1, "Machado de Assis"));
+  await autorRepository.inserir(new Autor(2, "Clarice Lispector"));
 
-  livroRepository.inserir(new Livro(1, "Dom Casmurro", 1));
-  livroRepository.inserir(
+  await livroRepository.inserir(new Livro(1, "Dom Casmurro", 1));
+  await livroRepository.inserir(
     new Livro(2, "Memórias Póstumas de Brás Cubas", 1)
   );
-  livroRepository.inserir(new Livro(3, "A Hora da Estrela", 2));
+  await livroRepository.inserir(new Livro(3, "A Hora da Estrela", 2));
 
-  clienteRepository.inserir(
+  await clienteRepository.inserir(
     new Cliente(1, "Ana Silva", "ana@example.com")
   );
-  clienteRepository.inserir(
+  await clienteRepository.inserir(
     new Cliente(2, "Bruno Souza", "bruno@example.com")
   );
 
-  emprestimoRepository.inserir(
+  await emprestimoRepository.inserir(
     new Emprestimo(
       1,
       1,
@@ -38,7 +38,7 @@ export function carregarDadosIniciais(
     )
   );
 
-  emprestimoRepository.inserir(
+  await emprestimoRepository.inserir(
     new Emprestimo(
       2,
       3,
