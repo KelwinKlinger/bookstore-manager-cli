@@ -12,7 +12,7 @@ export class EmprestimoController {
     const livroId = await this.lerId("ID do livro: ");
     const clienteId = await this.lerId("ID do cliente: ");
 
-    const emprestimo = this.service.realizar(livroId, clienteId);
+    const emprestimo = await this.service.realizar(livroId, clienteId);
 
     console.log(`Empréstimo registrado com ID ${emprestimo.id}.`);
   }
@@ -20,43 +20,52 @@ export class EmprestimoController {
   public async devolver(): Promise<void> {
     const id = await this.lerId("ID do empréstimo: ");
 
-    this.service.devolver(id);
+    await this.service.devolver(id);
 
     console.log("Devolução registrada.");
   }
 
-  public listar(): void {
-    this.exibir(this.service.listar());
+  public async listar(): Promise<void> {
+    await this.exibir(await this.service.listar());
   }
 
-  public listarAtivos(): void {
-    this.exibir(this.service.listarAtivos());
+  public async listarAtivos(): Promise<void> {
+    await this.exibir(await this.service.listarAtivos());
   }
 
   public async consultar(): Promise<void> {
     const id = await this.lerId("ID do empréstimo: ");
 
-    this.exibir([this.service.buscarPorId(id)]);
+    await this.exibir([await this.service.buscarPorId(id)]);
   }
 
-  private exibir(emprestimos: Emprestimo[]): void {
+  private async exibir(emprestimos: Emprestimo[]): Promise<void> {
     if (emprestimos.length === 0) {
       console.log("Nenhum empréstimo encontrado.");
       return;
     }
 
-    console.table(
-      emprestimos.map((emprestimo) => ({
+    const registros = [];
+
+    for (const emprestimo of emprestimos) {
+      const detalhes = await this.service.consultarDetalhes(
+        emprestimo.id
+      );
+
+      registros.push({
         id: emprestimo.id,
-        livroId: emprestimo.livroId,
-        clienteId: emprestimo.clienteId,
-        dataEmprestimo: emprestimo.dataEmprestimo.toLocaleString("pt-BR"),
+        livro: detalhes.tituloLivro,
+        cliente: detalhes.nomeCliente,
+        dataEmprestimo:
+          emprestimo.dataEmprestimo.toLocaleString("pt-BR"),
         dataDevolucao:
           emprestimo.dataDevolucao === null
             ? "Em aberto"
             : emprestimo.dataDevolucao.toLocaleString("pt-BR")
-      }))
-    );
+      });
+    }
+
+    console.table(registros);
   }
 
   private async lerId(mensagem: string): Promise<number> {

@@ -11,13 +11,13 @@ export class ClienteController {
     const nome = await this.terminal.perguntar("Nome do cliente: ");
     const email = await this.terminal.perguntar("E-mail: ");
 
-    const cliente = this.service.cadastrar(nome, email);
+    const cliente = await this.service.cadastrar(nome, email);
 
     console.log(`Cliente cadastrado com ID ${cliente.id}.`);
   }
 
-  public listar(): void {
-    const clientes = this.service.listar();
+  public async listar(): Promise<void> {
+    const clientes = await this.service.listar();
 
     if (clientes.length === 0) {
       console.log("Nenhum cliente cadastrado.");
@@ -30,24 +30,24 @@ export class ClienteController {
   public async consultar(): Promise<void> {
     const id = await this.lerId();
 
-    console.table([this.service.buscarPorId(id)]);
+    console.table([await this.service.buscarPorId(id)]);
   }
 
   public async atualizar(): Promise<void> {
     const id = await this.lerId();
-    this.service.buscarPorId(id);
+    await this.service.buscarPorId(id);
 
     const nome = await this.terminal.perguntar("Novo nome: ");
     const email = await this.terminal.perguntar("Novo e-mail: ");
 
-    this.service.atualizar(id, nome, email);
+    await this.service.atualizar(id, nome, email);
 
     console.log("Cliente atualizado.");
   }
 
   public async remover(): Promise<void> {
     const id = await this.lerId();
-    this.service.remover(id);
+    await this.service.remover(id);
 
     console.log("Cliente removido.");
   }

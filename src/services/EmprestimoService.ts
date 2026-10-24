@@ -7,71 +7,93 @@ export class EmprestimoService {
   constructor(
     private readonly repository: EmprestimoRepository,
     private readonly livroRepository: LivroRepository,
-    private readonly clienteRepository: ClienteRepository
+    private readonly clienteRepository: ClienteRepository,
   ) {}
 
-  public realizar(livroId: number, clienteId: number): Emprestimo {
+  public async realizar(
+    livroId: number,
+    clienteId: number,
+  ): Promise<Emprestimo> {
     this.validarId(livroId);
     this.validarId(clienteId);
 
-    if (!this.livroRepository.buscarPorId(livroId)) {
+    const livro = await this.livroRepository.buscarPorId(livroId);
+    if (!livro) {
       throw new Error("Livro não encontrado.");
     }
 
-    if (!this.clienteRepository.buscarPorId(clienteId)) {
+    if (!(await this.clienteRepository.buscarPorId(clienteId))) {
       throw new Error("Cliente não encontrado.");
     }
 
-    if (this.repository.buscarAtivoPorLivroId(livroId)) {
-      throw new Error("O livro já está emprestado.");
+    if (await this.repository.contarAtivosPorLivroId(livroId) >= livro.quantidadeTotal) {
+      throw new Error("Não há exemplares disponíveis deste livro.");
     }
 
-    const maiorId = this.repository.listar().reduce(
+    const maiorId = (await this.repository.listar()).reduce(
       (maior, emprestimo) => Math.max(maior, emprestimo.id),
-      0
+      0,
     );
 
-    const emprestimo = new Emprestimo(
-      maiorId + 1,
-      livroId,
-      clienteId
-    );
+    const emprestimo = new Emprestimo(maiorId + 1, livroId, clienteId);
 
-    this.repository.inserir(emprestimo);
+    await this.repository.inserir(emprestimo);
 
     return emprestimo;
   }
 
-  public devolver(id: number): Emprestimo {
-    const emprestimo = this.buscarPorId(id);
+  public async devolver(id: number): Promise<Emprestimo> {
+    const emprestimo = await this.buscarPorId(id);
 
     if (emprestimo.dataDevolucao !== null) {
       throw new Error("Este empréstimo já foi devolvido.");
     }
 
-    this.repository.registrarDevolucao(id, new Date());
+    await this.repository.registrarDevolucao(id, new Date());
 
     return emprestimo;
   }
 
-  public listar(): Emprestimo[] {
-    return this.repository.listar();
+  public async listar(): Promise<Emprestimo[]> {
+    return await this.repository.listar();
   }
 
-  public listarAtivos(): Emprestimo[] {
-    return this.repository.listarAtivos();
+  public async listarAtivos(): Promise<Emprestimo[]> {
+    return await this.repository.listarAtivos();
   }
 
-  public buscarPorId(id: number): Emprestimo {
+  public async buscarPorId(id: number): Promise<Emprestimo> {
     this.validarId(id);
 
-    const emprestimo = this.repository.buscarPorId(id);
+    const emprestimo = await this.repository.buscarPorId(id);
 
     if (!emprestimo) {
       throw new Error("Empréstimo não encontrado.");
     }
 
     return emprestimo;
+  }
+
+  public async consultarDetalhes(id: number): Promise<{
+    tituloLivro: string;
+    nomeCliente: string;
+  }> {
+    const emprestimo = await this.buscarPorId(id);
+
+    const livro = await this.livroRepository.buscarPorId(emprestimo.livroId);
+
+    const cliente = await this.clienteRepository.buscarPorId(
+      emprestimo.clienteId,
+    );
+
+    if (!livro || !cliente) {
+      throw new Error("Livro ou cliente do empréstimo não encontrado.");
+    }
+
+    return {
+      tituloLivro: livro.titulo,
+      nomeCliente: cliente.nome,
+    };
   }
 
   private validarId(id: number): void {

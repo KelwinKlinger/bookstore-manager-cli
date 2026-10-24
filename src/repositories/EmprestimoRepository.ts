@@ -3,29 +3,36 @@ import { Emprestimo } from "../models/Emprestimo";
 export class EmprestimoRepository {
   private emprestimos: Emprestimo[] = [];
 
-  public inserir(emprestimo: Emprestimo): void {
+  public async inserir(emprestimo: Emprestimo): Promise<void> {
     this.emprestimos.push(emprestimo);
   }
 
-  public listar(): Emprestimo[] {
+  public async listar(): Promise<Emprestimo[]> {
     return [...this.emprestimos];
   }
 
-  public buscarPorId(id: number): Emprestimo | undefined {
+  public async buscarPorId(id: number): Promise<Emprestimo | undefined> {
     return this.emprestimos.find(
       (emprestimo) => emprestimo.id === id
     );
   }
 
-  public listarAtivos(): Emprestimo[] {
+  public async listarAtivos(): Promise<Emprestimo[]> {
     return this.emprestimos.filter(
       (emprestimo) => emprestimo.dataDevolucao === null
     );
   }
 
-  public buscarAtivoPorLivroId(
+  public async contarAtivosPorLivroId(livroId: number): Promise<number> {
+    return this.emprestimos.filter(
+      (emprestimo) => emprestimo.livroId === livroId &&
+        emprestimo.dataDevolucao === null
+    ).length;
+  }
+
+  public async buscarAtivoPorLivroId(
     livroId: number
-  ): Emprestimo | undefined {
+  ): Promise<Emprestimo | undefined> {
     return this.emprestimos.find(
       (emprestimo) =>
         emprestimo.livroId === livroId &&
@@ -33,20 +40,20 @@ export class EmprestimoRepository {
     );
   }
 
-  public existePorLivroId(livroId: number): boolean {
+  public async existePorLivroId(livroId: number): Promise<boolean> {
     return this.emprestimos.some(
       (emprestimo) => emprestimo.livroId === livroId
     );
   }
 
-  public existePorClienteId(clienteId: number): boolean {
+  public async existePorClienteId(clienteId: number): Promise<boolean> {
     return this.emprestimos.some(
       (emprestimo) => emprestimo.clienteId === clienteId
     );
   }
 
-  public registrarDevolucao(id: number, data: Date): boolean {
-    const emprestimo = this.buscarPorId(id);
+  public async registrarDevolucao(id: number, data: Date): Promise<boolean> {
+    const emprestimo = await this.buscarPorId(id);
 
     if (!emprestimo) {
       return false;

@@ -10,28 +10,28 @@ export class LivroService {
     private readonly emprestimoRepository: EmprestimoRepository,
   ) {}
 
-  public cadastrar(titulo: string, autorId: number): Livro {
+  public async cadastrar(titulo: string, autorId: number, quantidadeTotal: number): Promise<Livro> {
+    this.validarQuantidade(quantidadeTotal);
     const tituloValidado = this.validarTitulo(titulo);
-    this.validarAutor(autorId);
+    await this.validarAutor(autorId);
 
-    const maiorId = this.repository
-      .listar()
+    const maiorId = (await this.repository.listar())
       .reduce((maior, livro) => Math.max(maior, livro.id), 0);
 
-    const livro = new Livro(maiorId + 1, tituloValidado, autorId);
-    this.repository.inserir(livro);
+    const livro = new Livro(maiorId + 1, tituloValidado, autorId, quantidadeTotal);
+    await this.repository.inserir(livro);
 
     return livro;
   }
 
-  public listar(): Livro[] {
-    return this.repository.listar();
+  public async listar(): Promise<Livro[]> {
+    return await this.repository.listar();
   }
 
-  public buscarPorId(id: number): Livro {
+  public async buscarPorId(id: number): Promise<Livro> {
     this.validarId(id);
 
-    const livro = this.repository.buscarPorId(id);
+    const livro = await this.repository.buscarPorId(id);
 
     if (!livro) {
       throw new Error("Livro não encontrado.");
@@ -40,26 +40,46 @@ export class LivroService {
     return livro;
   }
 
-  public atualizar(id: number, titulo: string, autorId: number): Livro {
-    this.buscarPorId(id);
+  public async atualizar(id: number, titulo: string, autorId: number, quantidadeTotal: number): Promise<Livro> {
+    await this.buscarPorId(id);
+    this.validarQuantidade(quantidadeTotal);
     const tituloValidado = this.validarTitulo(titulo);
-    this.validarAutor(autorId);
+    await this.validarAutor(autorId);
 
-    this.repository.atualizar(id, tituloValidado, autorId);
+    const emprestados = await this.emprestimoRepository.contarAtivosPorLivroId(id);
+    if (quantidadeTotal < emprestados) {
+      throw new Error("O total não pode ser menor que a quantidade de exemplares emprestados.");
+    }
 
-    return this.buscarPorId(id);
+    await this.repository.atualizar(id, tituloValidado, autorId, quantidadeTotal);
+
+    return await this.buscarPorId(id);
   }
 
-  public remover(id: number): void {
-    this.buscarPorId(id);
+  public async remover(id: number): Promise<void> {
+    await this.buscarPorId(id);
 
-    if (this.emprestimoRepository.existePorLivroId(id)) {
+    if (await this.emprestimoRepository.existePorLivroId(id)) {
       throw new Error(
         "Não é possível remover um livro com histórico de empréstimos.",
       );
     }
 
-    this.repository.remover(id);
+    await this.repository.remover(id);
+  }
+
+  public async consultarDisponibilidade(id: number): Promise<Livro & {
+    quantidadeDisponivel: number;
+  }> {
+    const livro = await this.buscarPorId(id);
+    const emprestados = await this.emprestimoRepository.contarAtivosPorLivroId(id);
+    return { ...livro, quantidadeDisponivel: livro.quantidadeTotal - emprestados };
+  }
+
+  private validarQuantidade(quantidade: number): void {
+    if (!Number.isSafeInteger(quantidade) || quantidade <= 0 || quantidade > 2147483647) {
+      throw new Error("A quantidade total deve ser um inteiro entre 1 e 2147483647.");
+    }
   }
 
   private validarTitulo(titulo: string): string {
@@ -72,10 +92,10 @@ export class LivroService {
     return tituloTratado;
   }
 
-  private validarAutor(autorId: number): void {
+  private async validarAutor(autorId: number): Promise<void> {
     this.validarId(autorId);
 
-    if (!this.autorRepository.buscarPorId(autorId)) {
+    if (!await this.autorRepository.buscarPorId(autorId)) {
       throw new Error("Autor não encontrado. Cadastre o autor primeiro.");
     }
   }

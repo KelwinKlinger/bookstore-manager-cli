@@ -11,45 +11,59 @@ export class LivroController {
     const titulo = await this.terminal.perguntar("Título do livro: ");
     const autorId = await this.lerId("ID do autor: ");
 
-    const livro = this.service.cadastrar(titulo, autorId);
+    const quantidade = await this.lerQuantidade();
+    const livro = await this.service.cadastrar(titulo, autorId, quantidade);
 
     console.log(`Livro cadastrado com ID ${livro.id}.`);
   }
 
-  public listar(): void {
-    const livros = this.service.listar();
+  public async listar(): Promise<void> {
+    const livros = await this.service.listar();
 
     if (livros.length === 0) {
       console.log("Nenhum livro cadastrado.");
       return;
     }
 
-    console.table(livros);
+    const registros = [];
+    for (const livro of livros) {
+      registros.push(await this.service.consultarDisponibilidade(livro.id));
+    }
+    console.table(registros);
   }
 
   public async consultar(): Promise<void> {
     const id = await this.lerId("ID do livro: ");
 
-    console.table([this.service.buscarPorId(id)]);
+    console.table([await this.service.consultarDisponibilidade(id)]);
   }
 
   public async atualizar(): Promise<void> {
     const id = await this.lerId("ID do livro: ");
-    this.service.buscarPorId(id);
+    await this.service.buscarPorId(id);
 
     const titulo = await this.terminal.perguntar("Novo título: ");
     const autorId = await this.lerId("ID do autor: ");
 
-    this.service.atualizar(id, titulo, autorId);
+    const quantidade = await this.lerQuantidade();
+    await this.service.atualizar(id, titulo, autorId, quantidade);
 
     console.log("Livro atualizado.");
   }
 
   public async remover(): Promise<void> {
     const id = await this.lerId("ID do livro: ");
-    this.service.remover(id);
+    await this.service.remover(id);
 
     console.log("Livro removido.");
+  }
+
+  private async lerQuantidade(): Promise<number> {
+    const entrada = await this.terminal.perguntar("Quantidade total de exemplares: ");
+    if (!/^[0-9]+$/.test(entrada)) {
+      throw new Error("Digite uma quantidade inteira positiva.");
+    }
+    return Number(entrada);
   }
 
   private async lerId(mensagem: string): Promise<number> {

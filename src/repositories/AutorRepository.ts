@@ -3,20 +3,20 @@ import { Autor } from "../models/Autor";
 export class AutorRepository {
   private autores: Autor[] = [];
 
-  public inserir(autor: Autor): void {
+  public async inserir(autor: Autor): Promise<void> {
     this.autores.push(autor);
   }
 
-  public listar(): Autor[] {
+  public async listar(): Promise<Autor[]> {
     return [...this.autores];
   }
 
-  public buscarPorId(id: number): Autor | undefined {
+  public async buscarPorId(id: number): Promise<Autor | undefined> {
     return this.autores.find((autor) => autor.id === id);
   }
 
-  public atualizar(id: number, nome: string): boolean {
-    const autor = this.buscarPorId(id);
+  public async atualizar(id: number, nome: string): Promise<boolean> {
+    const autor = await this.buscarPorId(id);
 
     if (!autor) {
       return false;
@@ -26,7 +26,7 @@ export class AutorRepository {
     return true;
   }
 
-  public remover(id: number): boolean {
+  public async remover(id: number): Promise<boolean> {
     const indice = this.autores.findIndex((autor) => autor.id === id);
 
     if (indice === -1) {

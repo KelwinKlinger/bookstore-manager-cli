@@ -25,7 +25,7 @@ export class AutorMenu {
             await this.controller.cadastrar();
             break;
           case "2":
-            this.controller.listar();
+            await this.controller.listar();
             break;
           case "3":
             await this.controller.consultar();
