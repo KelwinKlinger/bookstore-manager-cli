@@ -2,9 +2,18 @@ import { Emprestimo } from "../models/Emprestimo";
 
 export class EmprestimoRepository {
   private emprestimos: Emprestimo[] = [];
+  private proximoId = 1;
+
+  public async gerarId(): Promise<number> {
+    if (!Number.isSafeInteger(this.proximoId)) {
+      throw new Error("Limite de IDs atingido.");
+    }
+    return this.proximoId++;
+  }
 
   public async inserir(emprestimo: Emprestimo): Promise<void> {
     this.emprestimos.push(emprestimo);
+    this.proximoId = Math.max(this.proximoId, emprestimo.id + 1);
   }
 
   public async listar(): Promise<Emprestimo[]> {

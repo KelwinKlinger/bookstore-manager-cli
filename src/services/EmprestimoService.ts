@@ -30,12 +30,9 @@ export class EmprestimoService {
       throw new Error("Não há exemplares disponíveis deste livro.");
     }
 
-    const maiorId = (await this.repository.listar()).reduce(
-      (maior, emprestimo) => Math.max(maior, emprestimo.id),
-      0,
-    );
+    const id = await this.repository.gerarId();
 
-    const emprestimo = new Emprestimo(maiorId + 1, livroId, clienteId);
+    const emprestimo = new Emprestimo(id, livroId, clienteId);
 
     await this.repository.inserir(emprestimo);
 

@@ -14,10 +14,9 @@ export class ClienteService {
 
     await this.verificarEmailDisponivel(emailValidado);
 
-    const maiorId = (await this.repository.listar())
-      .reduce((maior, cliente) => Math.max(maior, cliente.id), 0);
+    const id = await this.repository.gerarId();
 
-    const cliente = new Cliente(maiorId + 1, nomeValidado, emailValidado);
+    const cliente = new Cliente(id, nomeValidado, emailValidado);
 
     await this.repository.inserir(cliente);
 
@@ -70,6 +69,10 @@ export class ClienteService {
       throw new Error("O nome do cliente é obrigatório.");
     }
 
+    if ([...nomeTratado].length > 150) {
+      throw new Error("O nome deve ter no máximo 150 caracteres.");
+    }
+
     return nomeTratado;
   }
 
@@ -78,6 +81,10 @@ export class ClienteService {
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTratado)) {
       throw new Error("Informe um e-mail válido.");
+    }
+
+    if ([...emailTratado].length > 254) {
+      throw new Error("O e-mail deve ter no máximo 254 caracteres.");
     }
 
     return emailTratado;

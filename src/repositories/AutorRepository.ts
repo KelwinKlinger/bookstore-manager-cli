@@ -2,9 +2,18 @@ import { Autor } from "../models/Autor";
 
 export class AutorRepository {
   private autores: Autor[] = [];
+  private proximoId = 1;
+
+  public async gerarId(): Promise<number> {
+    if (!Number.isSafeInteger(this.proximoId)) {
+      throw new Error("Limite de IDs atingido.");
+    }
+    return this.proximoId++;
+  }
 
   public async inserir(autor: Autor): Promise<void> {
     this.autores.push(autor);
+    this.proximoId = Math.max(this.proximoId, autor.id + 1);
   }
 
   public async listar(): Promise<Autor[]> {
