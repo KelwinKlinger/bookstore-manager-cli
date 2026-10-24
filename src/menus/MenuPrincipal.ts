@@ -1,11 +1,13 @@
 import { AutorMenu } from "./AutorMenu";
 import { LivroMenu } from "./LivroMenu";
+import { ClienteMenu } from "./ClienteMenu";
 import { Terminal } from "../utils/Terminal";
 
 export class MenuPrincipal {
   constructor(
     private readonly autorMenu: AutorMenu,
     private readonly livroMenu: LivroMenu,
+    private readonly clienteMenu: ClienteMenu,
     private readonly terminal: Terminal
   ) {}
 
@@ -14,6 +16,7 @@ export class MenuPrincipal {
       console.log("\n--- BookStore Manager CLI ---");
       console.log("1 - Autores");
       console.log("2 - Livros");
+      console.log("3 - Clientes");
       console.log("0 - Encerrar");
 
       const opcao = await this.terminal.perguntar("Escolha: ");
@@ -24,6 +27,9 @@ export class MenuPrincipal {
           break;
         case "2":
           await this.livroMenu.executar();
+          break;
+        case "3":
+          await this.clienteMenu.executar();
           break;
         case "0":
           console.log("Aplicação encerrada.");
