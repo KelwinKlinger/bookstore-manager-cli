@@ -1,36 +1,31 @@
+import { AutorController } from "./controllers/AutorController";
+import { AutorMenu } from "./menus/AutorMenu";
 import { AutorRepository } from "./repositories/AutorRepository";
 import { AutorService } from "./services/AutorService";
+import { Terminal } from "./utils/Terminal";
 
-const repository = new AutorRepository();
-const service = new AutorService(repository);
+async function main(): Promise<void> {
+  const terminal = new Terminal();
 
-console.log("BookStore Manager CLI");
+  try {
+    const repository = new AutorRepository();
+    const service = new AutorService(repository);
+    const controller = new AutorController(service, terminal);
+    const menu = new AutorMenu(controller, terminal);
 
-const autor1 = service.cadastrar("Machado de Assis");
-const autor2 = service.cadastrar("Clarice Lispector");
+    console.log("BookStore Manager CLI");
 
-console.log("\nAutores cadastrados:");
-console.table(service.listar());
-
-console.log("\nConsulta por ID:");
-console.log(service.buscarPorId(autor1.id));
-
-service.atualizar(autor1.id, "Joaquim Maria Machado de Assis");
-
-console.log("\nAutor atualizado:");
-console.log(service.buscarPorId(autor1.id));
-
-service.remover(autor2.id);
-
-console.log("\nApós remover Clarice:");
-console.table(service.listar());
-
-try {
-  service.cadastrar("   ");
-} catch (erro) {
-  if (erro instanceof Error) {
-    console.log("\nErro tratado:", erro.message);
-  } else {
-    throw erro;
+    await menu.executar();
+  } finally {
+    terminal.fechar();
   }
 }
+
+main().catch((erro: unknown) => {
+  console.error(
+    "Falha na aplicação:",
+    erro instanceof Error ? erro.message : erro
+  );
+
+  process.exitCode = 1;
+});
