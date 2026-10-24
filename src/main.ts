@@ -1,21 +1,44 @@
 import { AutorController } from "./controllers/AutorController";
+import { LivroController } from "./controllers/LivroController";
 import { AutorMenu } from "./menus/AutorMenu";
+import { LivroMenu } from "./menus/LivroMenu";
+import { MenuPrincipal } from "./menus/MenuPrincipal";
 import { AutorRepository } from "./repositories/AutorRepository";
+import { LivroRepository } from "./repositories/LivroRepository";
 import { AutorService } from "./services/AutorService";
+import { LivroService } from "./services/LivroService";
 import { Terminal } from "./utils/Terminal";
 
 async function main(): Promise<void> {
   const terminal = new Terminal();
 
   try {
-    const repository = new AutorRepository();
-    const service = new AutorService(repository);
-    const controller = new AutorController(service, terminal);
-    const menu = new AutorMenu(controller, terminal);
+    const autorRepository = new AutorRepository();
+    const livroRepository = new LivroRepository();
 
-    console.log("BookStore Manager CLI");
+    const autorService = new AutorService(
+      autorRepository,
+      livroRepository
+    );
 
-    await menu.executar();
+    const livroService = new LivroService(
+      livroRepository,
+      autorRepository
+    );
+
+    const autorController = new AutorController(autorService, terminal);
+    const livroController = new LivroController(livroService, terminal);
+
+    const autorMenu = new AutorMenu(autorController, terminal);
+    const livroMenu = new LivroMenu(livroController, terminal);
+
+    const menuPrincipal = new MenuPrincipal(
+      autorMenu,
+      livroMenu,
+      terminal
+    );
+
+    await menuPrincipal.executar();
   } finally {
     terminal.fechar();
   }
