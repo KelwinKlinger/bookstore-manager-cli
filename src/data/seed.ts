@@ -16,11 +16,11 @@ export async function carregarDadosIniciais(
   await autorRepository.inserir(new Autor(1, "Machado de Assis"));
   await autorRepository.inserir(new Autor(2, "Clarice Lispector"));
 
-  await livroRepository.inserir(new Livro(1, "Dom Casmurro", 1));
+  await livroRepository.inserir(new Livro(1, "Dom Casmurro", 1, 3));
   await livroRepository.inserir(
-    new Livro(2, "Memórias Póstumas de Brás Cubas", 1)
+    new Livro(2, "Memórias Póstumas de Brás Cubas", 1, 2)
   );
-  await livroRepository.inserir(new Livro(3, "A Hora da Estrela", 2));
+  await livroRepository.inserir(new Livro(3, "A Hora da Estrela", 2, 1));
 
   await clienteRepository.inserir(
     new Cliente(1, "Ana Silva", "ana@example.com")

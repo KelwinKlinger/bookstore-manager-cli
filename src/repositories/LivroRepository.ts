@@ -22,7 +22,8 @@ export class LivroRepository {
   public async atualizar(
     id: number,
     titulo: string,
-    autorId: number
+    autorId: number,
+    quantidadeTotal: number
   ): Promise<boolean> {
     const livro = await this.buscarPorId(id);
 
@@ -32,6 +33,7 @@ export class LivroRepository {
 
     livro.titulo = titulo;
     livro.autorId = autorId;
+    livro.quantidadeTotal = quantidadeTotal;
 
     return true;
   }

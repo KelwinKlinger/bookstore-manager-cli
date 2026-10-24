@@ -10,14 +10,15 @@ export class LivroService {
     private readonly emprestimoRepository: EmprestimoRepository,
   ) {}
 
-  public async cadastrar(titulo: string, autorId: number): Promise<Livro> {
+  public async cadastrar(titulo: string, autorId: number, quantidadeTotal: number): Promise<Livro> {
+    this.validarQuantidade(quantidadeTotal);
     const tituloValidado = this.validarTitulo(titulo);
     await this.validarAutor(autorId);
 
     const maiorId = (await this.repository.listar())
       .reduce((maior, livro) => Math.max(maior, livro.id), 0);
 
-    const livro = new Livro(maiorId + 1, tituloValidado, autorId);
+    const livro = new Livro(maiorId + 1, tituloValidado, autorId, quantidadeTotal);
     await this.repository.inserir(livro);
 
     return livro;
@@ -39,12 +40,18 @@ export class LivroService {
     return livro;
   }
 
-  public async atualizar(id: number, titulo: string, autorId: number): Promise<Livro> {
+  public async atualizar(id: number, titulo: string, autorId: number, quantidadeTotal: number): Promise<Livro> {
     await this.buscarPorId(id);
+    this.validarQuantidade(quantidadeTotal);
     const tituloValidado = this.validarTitulo(titulo);
     await this.validarAutor(autorId);
 
-    await this.repository.atualizar(id, tituloValidado, autorId);
+    const emprestados = await this.emprestimoRepository.contarAtivosPorLivroId(id);
+    if (quantidadeTotal < emprestados) {
+      throw new Error("O total não pode ser menor que a quantidade de exemplares emprestados.");
+    }
+
+    await this.repository.atualizar(id, tituloValidado, autorId, quantidadeTotal);
 
     return await this.buscarPorId(id);
   }
@@ -59,6 +66,20 @@ export class LivroService {
     }
 
     await this.repository.remover(id);
+  }
+
+  public async consultarDisponibilidade(id: number): Promise<Livro & {
+    quantidadeDisponivel: number;
+  }> {
+    const livro = await this.buscarPorId(id);
+    const emprestados = await this.emprestimoRepository.contarAtivosPorLivroId(id);
+    return { ...livro, quantidadeDisponivel: livro.quantidadeTotal - emprestados };
+  }
+
+  private validarQuantidade(quantidade: number): void {
+    if (!Number.isSafeInteger(quantidade) || quantidade <= 0 || quantidade > 2147483647) {
+      throw new Error("A quantidade total deve ser um inteiro entre 1 e 2147483647.");
+    }
   }
 
   private validarTitulo(titulo: string): string {
