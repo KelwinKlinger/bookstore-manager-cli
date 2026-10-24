@@ -15,10 +15,9 @@ export class LivroService {
     const tituloValidado = this.validarTitulo(titulo);
     await this.validarAutor(autorId);
 
-    const maiorId = (await this.repository.listar())
-      .reduce((maior, livro) => Math.max(maior, livro.id), 0);
+    const id = await this.repository.gerarId();
 
-    const livro = new Livro(maiorId + 1, tituloValidado, autorId, quantidadeTotal);
+    const livro = new Livro(id, tituloValidado, autorId, quantidadeTotal);
     await this.repository.inserir(livro);
 
     return livro;
@@ -87,6 +86,10 @@ export class LivroService {
 
     if (tituloTratado.length === 0) {
       throw new Error("O título do livro é obrigatório.");
+    }
+
+    if ([...tituloTratado].length > 200) {
+      throw new Error("O título deve ter no máximo 200 caracteres.");
     }
 
     return tituloTratado;
