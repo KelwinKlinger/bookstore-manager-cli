@@ -26,37 +26,46 @@ export class EmprestimoController {
   }
 
   public async listar(): Promise<void> {
-    this.exibir(await this.service.listar());
+    await this.exibir(await this.service.listar());
   }
 
   public async listarAtivos(): Promise<void> {
-    this.exibir(await this.service.listarAtivos());
+    await this.exibir(await this.service.listarAtivos());
   }
 
   public async consultar(): Promise<void> {
     const id = await this.lerId("ID do empréstimo: ");
 
-    this.exibir([await this.service.buscarPorId(id)]);
+    await this.exibir([await this.service.buscarPorId(id)]);
   }
 
-  private exibir(emprestimos: Emprestimo[]): void {
+  private async exibir(emprestimos: Emprestimo[]): Promise<void> {
     if (emprestimos.length === 0) {
       console.log("Nenhum empréstimo encontrado.");
       return;
     }
 
-    console.table(
-      emprestimos.map((emprestimo) => ({
+    const registros = [];
+
+    for (const emprestimo of emprestimos) {
+      const detalhes = await this.service.consultarDetalhes(
+        emprestimo.id
+      );
+
+      registros.push({
         id: emprestimo.id,
-        livroId: emprestimo.livroId,
-        clienteId: emprestimo.clienteId,
-        dataEmprestimo: emprestimo.dataEmprestimo.toLocaleString("pt-BR"),
+        livro: detalhes.tituloLivro,
+        cliente: detalhes.nomeCliente,
+        dataEmprestimo:
+          emprestimo.dataEmprestimo.toLocaleString("pt-BR"),
         dataDevolucao:
           emprestimo.dataDevolucao === null
             ? "Em aberto"
             : emprestimo.dataDevolucao.toLocaleString("pt-BR")
-      }))
-    );
+      });
+    }
+
+    console.table(registros);
   }
 
   private async lerId(mensagem: string): Promise<number> {

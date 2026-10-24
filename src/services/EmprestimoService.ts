@@ -7,18 +7,21 @@ export class EmprestimoService {
   constructor(
     private readonly repository: EmprestimoRepository,
     private readonly livroRepository: LivroRepository,
-    private readonly clienteRepository: ClienteRepository
+    private readonly clienteRepository: ClienteRepository,
   ) {}
 
-  public async realizar(livroId: number, clienteId: number): Promise<Emprestimo> {
+  public async realizar(
+    livroId: number,
+    clienteId: number,
+  ): Promise<Emprestimo> {
     this.validarId(livroId);
     this.validarId(clienteId);
 
-    if (!await this.livroRepository.buscarPorId(livroId)) {
+    if (!(await this.livroRepository.buscarPorId(livroId))) {
       throw new Error("Livro não encontrado.");
     }
 
-    if (!await this.clienteRepository.buscarPorId(clienteId)) {
+    if (!(await this.clienteRepository.buscarPorId(clienteId))) {
       throw new Error("Cliente não encontrado.");
     }
 
@@ -28,14 +31,10 @@ export class EmprestimoService {
 
     const maiorId = (await this.repository.listar()).reduce(
       (maior, emprestimo) => Math.max(maior, emprestimo.id),
-      0
+      0,
     );
 
-    const emprestimo = new Emprestimo(
-      maiorId + 1,
-      livroId,
-      clienteId
-    );
+    const emprestimo = new Emprestimo(maiorId + 1, livroId, clienteId);
 
     await this.repository.inserir(emprestimo);
 
@@ -72,6 +71,28 @@ export class EmprestimoService {
     }
 
     return emprestimo;
+  }
+
+  public async consultarDetalhes(id: number): Promise<{
+    tituloLivro: string;
+    nomeCliente: string;
+  }> {
+    const emprestimo = await this.buscarPorId(id);
+
+    const livro = await this.livroRepository.buscarPorId(emprestimo.livroId);
+
+    const cliente = await this.clienteRepository.buscarPorId(
+      emprestimo.clienteId,
+    );
+
+    if (!livro || !cliente) {
+      throw new Error("Livro ou cliente do empréstimo não encontrado.");
+    }
+
+    return {
+      tituloLivro: livro.titulo,
+      nomeCliente: cliente.nome,
+    };
   }
 
   private validarId(id: number): void {
